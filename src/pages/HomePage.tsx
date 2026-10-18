@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import DestinationSearch from '../components/DestinationSearch'
 import FeatureCard from '../components/FeatureCard'
 
 export default function HomePage() {
   const [showPlanNote, setShowPlanNote] = useState(false)
+
+  useEffect(() => {
+    if (window.location.hash === '#plan') {
+      document.getElementById('plan')?.scrollIntoView()
+    }
+  }, [])
 
   return (
     <div id="top">
@@ -43,8 +49,8 @@ export default function HomePage() {
             <h2 id="features-title">여행 준비의 복잡함은 덜고,<br />설렘은 더하고.</h2>
           </div>
           <div className="feature-grid">
-            <FeatureCard number="01" icon="☀" title="월별 날씨 확인" description="여행할 때의 평균적인 날씨를 한눈에 살펴보세요." className="weather-card" />
-            <FeatureCard number="02" icon="♧" title="옷차림 가이드" description="기온에 맞는 옷차림을 참고해 짐을 준비하세요." className="outfit-card" />
+            <FeatureCard number="01" icon="☀" title="월별 날씨 확인" description="여행할 때의 평균적인 날씨를 한눈에 살펴보세요." className="weather-card" to="/weather" />
+            <FeatureCard number="02" icon="♧" title="옷차림 가이드" description="기온에 맞는 옷차림을 참고해 짐을 준비하세요." className="outfit-card" to="/weather" />
             <FeatureCard number="03" icon="↗" title="자동 일정 만들기" description="가고 싶은 곳을 중심으로 여행 동선을 그려보세요." className="itinerary-card" />
           </div>
         </section>

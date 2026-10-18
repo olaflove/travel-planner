@@ -1,18 +1,19 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
 
 const popularCities = ['삿포로', '다낭', '리스본', '치앙마이']
 const months = Array.from({ length: 12 }, (_, index) => index + 1)
 
 export default function DestinationSearch() {
+  const navigate = useNavigate()
   const [city, setCity] = useState('')
   const [month, setMonth] = useState('')
-  const [submitted, setSubmitted] = useState<{ city: string; month: string } | null>(null)
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const trimmedCity = city.trim()
     if (!trimmedCity || !month) return
-    setSubmitted({ city: trimmedCity, month })
+    navigate(`/weather?${new URLSearchParams({ city: trimmedCity, month })}`)
   }
 
   return (
@@ -58,12 +59,6 @@ export default function DestinationSearch() {
           <button key={popularCity} type="button" onClick={() => setCity(popularCity)}>{popularCity}</button>
         ))}
       </div>
-      {submitted && (
-        <div className="search-feedback" role="status">
-          <strong>{submitted.city} · {submitted.month}월</strong>
-          <span>선택했어요. 월별 날씨 데이터 연결은 다음 단계에서 진행합니다.</span>
-        </div>
-      )}
     </div>
   )
 }

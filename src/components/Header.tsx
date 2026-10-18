@@ -1,15 +1,18 @@
+import { Link, useLocation } from 'react-router'
+
 export default function Header() {
+  const isWeatherPage = useLocation().pathname === '/weather'
   return (
     <header className="site-header">
-      <a className="brand" href="#top" aria-label="어디로 홈">
+      <Link className="brand" to="/" aria-label="어디로 홈">
         <span className="brand-mark" aria-hidden="true">✳</span>
         <span>어디로</span>
-      </a>
+      </Link>
       <nav className="header-nav" aria-label="주요 메뉴">
-        <a href="#weather">날씨와 옷차림</a>
-        <a href="#plan">일정 만들기</a>
+        <Link to="/weather" aria-current={isWeatherPage ? 'page' : undefined}>날씨와 옷차림</Link>
+        <Link to="/#plan">일정 만들기</Link>
       </nav>
-      <a className="header-cta" href="#weather">여행 준비하기 <span aria-hidden="true">↗</span></a>
+      <Link className="header-cta" to="/weather">여행 준비하기 <span aria-hidden="true">↗</span></Link>
     </header>
   )
 }

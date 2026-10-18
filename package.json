@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "refresh:recommendation-climate": "node --experimental-strip-types scripts/generate-recommendation-climate.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router": "^8.4.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
