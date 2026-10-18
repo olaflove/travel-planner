@@ -1,0 +1,34 @@
+.annual-climate{margin-top:18px;padding:30px 34px 26px;border:1px solid #e1e9df;border-radius:20px;background:#fff}
+.annual-climate-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:25px}
+.annual-climate-heading h3{margin:8px 0 5px;font-size:25px;letter-spacing:-1px}
+.annual-climate-heading p{margin:0;color:#849187;font-size:12px;line-height:1.6}
+.annual-climate-legend{display:flex;flex-wrap:wrap;gap:15px;color:#708075;font-size:12px;white-space:nowrap}
+.annual-climate-legend span{display:inline-flex;align-items:center;gap:6px}
+.annual-climate-legend span::before{content:'';display:inline-block;width:16px;height:3px;border-radius:2px}
+.annual-climate-legend .high::before{background:#e37866}
+.annual-climate-legend .low::before{background:#438cbd}
+.annual-climate-legend .rain::before{height:9px;background:#91c5da}
+.annual-chart-scroll{overflow-x:auto}
+.annual-chart-surface{width:100%;min-width:760px}
+.annual-chart-surface svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-grid{stroke:#e8ede8;stroke-width:1}
+.chart-unit{fill:#7c897f;font-size:12px;font-weight:700}
+.chart-axis{fill:#87948a;font-size:12px}
+.chart-selected-band{fill:#edf5ee}
+.chart-rain-bar{fill:#91c5da}
+.chart-rain-bar.active{fill:#55a7cf}
+.chart-high-line,.chart-low-line{fill:none;stroke-width:2.5;stroke-linecap:round}
+.chart-high-line{stroke:#e37866}
+.chart-low-line{stroke:#438cbd}
+.chart-marker{stroke:#95ad9a;stroke-width:1;stroke-dasharray:4 4}
+.chart-high-point{fill:#e37866;stroke:white;stroke-width:2}
+.chart-low-point{fill:#438cbd;stroke:white;stroke-width:2}
+.annual-chart-months{display:grid;grid-template-columns:repeat(12,1fr);padding:0 3.7% 0 3.8%;margin-top:-1px}
+.annual-chart-months button{padding:5px 0;border:0;border-radius:6px;background:transparent;color:#87948a;font-size:12px;cursor:pointer}
+.annual-chart-months button.active{color:#275e4b;font-weight:800}
+.annual-chart-months button:hover,.annual-chart-months button:focus-visible{background:#edf5ee;color:#275e4b;outline:none}
+.annual-chart-detail{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-top:20px;padding:15px 17px;border-radius:11px;background:#eef4ef;color:#4d6856;font-size:13px}
+.annual-chart-detail strong{color:#286a50}
+.annual-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:800px){.annual-climate-heading{display:block}.annual-climate-legend{margin-top:16px}}
+@media(max-width:520px){.annual-climate{padding:23px 19px}.annual-climate-heading h3{font-size:22px}.annual-chart-detail{gap:8px 15px}}
