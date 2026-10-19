@@ -2,6 +2,7 @@ export type City = {
   id?: number
   name: string
   country: string
+  country_code?: string
   admin1?: string
   latitude: number
   longitude: number

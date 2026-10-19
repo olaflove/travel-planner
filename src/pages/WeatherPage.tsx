@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import Header from '../components/Header'
 import AnnualClimateChart from '../components/AnnualClimateChart'
+import CityBrowser from '../components/CityBrowser'
+import { findBrowseCity, type BrowseCity } from '../data/cityBrowser'
 import { recommendationCities } from '../data/recommendationCities'
 import recommendationClimate from '../data/recommendationClimate.json'
 import { recommendationMonths } from '../data/recommendationMonths'
@@ -42,11 +44,13 @@ export default function WeatherPage() {
   const initialMonth = Number(searchParams.get('month'))
   const [cityInput, setCityInput] = useState(initialCity)
   const [chosenCity, setChosenCity] = useState<City | null>(null)
+  const [selectedBrowseCity, setSelectedBrowseCity] = useState<BrowseCity | null>(null)
   const [suggestionOpen, setSuggestionOpen] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
   const [remoteSuggestions, setRemoteSuggestions] = useState<{ query: string; cities: City[] }>({ query: '', cities: [] })
   const [suggestionLoading, setSuggestionLoading] = useState(false)
   const [month, setMonth] = useState(initialMonth >= 1 && initialMonth <= 12 ? initialMonth : new Date().getMonth() + 1)
+  const [monthOpen, setMonthOpen] = useState(false)
   const [displayMonth, setDisplayMonth] = useState(initialMonth >= 1 && initialMonth <= 12 ? initialMonth : new Date().getMonth() + 1)
   const [cityOptions, setCityOptions] = useState<City[]>([])
   const [selectedCity, setSelectedCity] = useState<City | null>(null)
@@ -62,6 +66,23 @@ export default function WeatherPage() {
   const suggestions: City[] = [...localSuggestions, ...extraSuggestions].slice(0, 8)
   const initialLookupStarted = useRef(false)
   const weatherRequestId = useRef(0)
+  const monthPickerRef = useRef<HTMLDivElement>(null)
+  const monthTriggerRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!monthOpen) return
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!monthPickerRef.current?.contains(event.target as Node)) setMonthOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    return () => document.removeEventListener('pointerdown', closeOnOutsideClick)
+  }, [monthOpen])
+
+  function chooseMonth(value: number) {
+    setMonth(value)
+    setMonthOpen(false)
+    monthTriggerRef.current?.focus()
+  }
 
   useEffect(() => {
     if (!suggestionOpen || cityQuery.length < 3 || chosenCity?.name.toLocaleLowerCase() === cityQuery) {
@@ -82,6 +103,17 @@ export default function WeatherPage() {
   function chooseSuggestion(city: City) {
     setCityInput(city.name)
     setChosenCity(city)
+    setSelectedBrowseCity(null)
+    setSuggestionOpen(false)
+    setActiveSuggestion(-1)
+    setCityOptions([])
+  }
+
+  function chooseBrowseCity(city: BrowseCity) {
+    const knownCity = recommendationCities.find((item) => item.name === city.name)
+    setCityInput(city.name)
+    setChosenCity(knownCity ?? null)
+    setSelectedBrowseCity(city)
     setSuggestionOpen(false)
     setActiveSuggestion(-1)
     setCityOptions([])
@@ -108,7 +140,7 @@ export default function WeatherPage() {
     }
   }
 
-  async function lookupCity(query: string, targetMonth: number) {
+  async function lookupCity(query: string, targetMonth: number, browseCity?: BrowseCity) {
     const requestId = ++weatherRequestId.current
     setWeatherLoading(true)
     setWeatherError('')
@@ -120,8 +152,11 @@ export default function WeatherPage() {
       const results = await searchCities(query)
       if (requestId !== weatherRequestId.current) return
       if (!results.length) throw new Error('검색된 도시가 없어요. 도시 이름이나 국가 이름을 함께 입력해 보세요.')
-      setCityOptions(results)
-      await showClimate(results[0], targetMonth)
+      const matchedCity = browseCity?.countryCode ? results.find((item) => item.country_code === browseCity.countryCode) : results[0]
+      if (!matchedCity) throw new Error('선택한 지역의 대표 지점을 찾지 못했어요. 잠시 후 다시 시도해 주세요.')
+      setCityOptions(browseCity ? [] : results)
+      const city = browseCity ? { ...matchedCity, name: browseCity.name, country: browseCity.referencePoint ? `${browseCity.country} · ${browseCity.referencePoint} 기준` : browseCity.country } : matchedCity
+      await showClimate(city, targetMonth)
     } catch (error) {
       if (requestId === weatherRequestId.current) {
         setWeatherError(error instanceof Error ? error.message : '도시를 검색하지 못했어요.')
@@ -133,7 +168,15 @@ export default function WeatherPage() {
   useEffect(() => {
     if (initialLookupStarted.current || !initialCity.trim() || initialMonth < 1 || initialMonth > 12) return
     initialLookupStarted.current = true
-    void lookupCity(initialCity, initialMonth)
+    const knownCity = recommendationCities.find((item) => item.name === initialCity)
+    if (knownCity) {
+      setChosenCity(knownCity)
+      void showClimate(knownCity, initialMonth)
+    } else {
+      const browseCity = findBrowseCity(initialCity)
+      setSelectedBrowseCity(browseCity ?? null)
+      void lookupCity(browseCity?.query ?? initialCity, initialMonth, browseCity)
+    }
   }, [])
 
   function handleWeatherSubmit(event: FormEvent<HTMLFormElement>) {
@@ -144,6 +187,8 @@ export default function WeatherPage() {
     setSearchParams({ city: query, month: String(month) })
     if (chosenCity?.name === query) {
       void showClimate(chosenCity, month)
+    } else if (selectedBrowseCity?.name === query) {
+      void lookupCity(selectedBrowseCity.query, month, selectedBrowseCity)
     } else {
       void lookupCity(query, month)
     }
@@ -153,6 +198,7 @@ export default function WeatherPage() {
     ++weatherRequestId.current
     setCityInput(city.name)
     setChosenCity(city)
+    setSelectedBrowseCity(null)
     setSuggestionOpen(false)
     setMonth(recommendationMonth)
     setDisplayMonth(recommendationMonth)
@@ -189,7 +235,7 @@ export default function WeatherPage() {
             <div className="city-search-field" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setSuggestionOpen(false) }}>
               <label htmlFor="weather-city">도시 이름</label>
               <div className="city-input-wrap">
-                <input id="weather-city" value={cityInput} onChange={(event) => { setCityInput(event.target.value); setChosenCity(null); setSuggestionOpen(true); setActiveSuggestion(-1) }} onFocus={() => { if (cityInput.trim()) setSuggestionOpen(true) }} onKeyDown={(event) => {
+                <input id="weather-city" value={cityInput} onChange={(event) => { setCityInput(event.target.value); setChosenCity(null); setSelectedBrowseCity(null); setSuggestionOpen(true); setActiveSuggestion(-1) }} onFocus={() => { if (cityInput.trim()) setSuggestionOpen(true) }} onKeyDown={(event) => {
                   if (event.key === 'Escape') { setSuggestionOpen(false); setActiveSuggestion(-1) }
                   if (!suggestionOpen || !suggestions.length) return
                   if (event.key === 'ArrowDown') { event.preventDefault(); setActiveSuggestion((current) => (current + 1) % suggestions.length) }
@@ -202,9 +248,19 @@ export default function WeatherPage() {
                 </div>}
               </div>
             </div>
-            <label>여행할 달<select value={month} onChange={(event) => setMonth(Number(event.target.value))}>{months.map((item) => <option key={item} value={item}>{item}월</option>)}</select></label>
+            <div className="travel-month-field" ref={monthPickerRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setMonthOpen(false) }}>
+              <span className="travel-month-label" id="travel-month-label">여행할 달</span>
+              <button className="travel-month-trigger" ref={monthTriggerRef} type="button" aria-labelledby="travel-month-label travel-month-value" aria-expanded={monthOpen} aria-controls="travel-month-options" onClick={() => setMonthOpen((current) => !current)} onKeyDown={(event) => {
+                if (event.key === 'Escape') setMonthOpen(false)
+                if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && !monthOpen) { event.preventDefault(); setMonthOpen(true) }
+              }}><span id="travel-month-value">{month}월</span><span className="travel-month-chevron" aria-hidden="true" /></button>
+              {monthOpen && <div className="travel-month-options" id="travel-month-options" role="group" aria-label="여행할 달 선택" onKeyDown={(event) => { if (event.key === 'Escape') { setMonthOpen(false); monthTriggerRef.current?.focus() } }}>
+                {months.map((item) => <button key={item} type="button" className={month === item ? 'active' : ''} aria-pressed={month === item} onClick={() => chooseMonth(item)}>{item}월</button>)}
+              </div>}
+            </div>
             <button type="submit" disabled={weatherLoading}>{weatherLoading ? '불러오는 중…' : '날씨 보기 →'}</button>
           </form>
+          <CityBrowser onSelectCity={chooseBrowseCity} selectedCityName={selectedBrowseCity?.name} />
           {cityOptions.length > 1 && <div className="city-options"><span>검색된 도시</span>{cityOptions.map((city, index) => <button key={`${city.id || city.name}-${index}`} type="button" className={selectedCity === city ? 'selected' : ''} onClick={() => { chooseSuggestion(city); void showClimate(city, month) }}>{city.name}, {city.admin1 ? `${city.admin1}, ` : ''}{city.country}</button>)}</div>}
           {weatherError && <p className="weather-message error" role="alert">{weatherError}</p>}
           {weatherLoading && <p className="weather-message" role="status">도시의 기후 자료를 읽고 있어요…</p>}
