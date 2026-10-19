@@ -16,7 +16,7 @@ export type BrowseRegion = {
   countries: BrowseCountry[]
 }
 
-type Lookup = string | { query: string; referencePoint: string; countryCode?: string }
+type Lookup = string | { query: string; referencePoint?: string; countryCode?: string }
 
 function country(name: string, names: string[], lookups: Record<string, Lookup> = {}): BrowseCountry {
   return {
@@ -38,7 +38,7 @@ function country(name: string, names: string[], lookups: Record<string, Lookup> 
 export const cityRegions: BrowseRegion[] = [
   {
     name: '일본',
-    countries: [country('일본', ['도쿄', '후쿠오카', '오사카', '가고시마', '시즈오카', '나고야', '삿포로', '오키나와', '히로시마', '나가사키', '요나고', '다카마쓰', '대마도', '마쓰야마', '구마모토'], {
+    countries: [country('일본', ['도쿄', '오사카', '후쿠오카', '삿포로', '오키나와', '대마도', '나가사키', '가고시마', '구마모토', '히로시마', '마쓰야마', '요나고', '다카마쓰', '나고야', '시즈오카'], {
       가고시마: 'Kagoshima, Japan', 시즈오카: 'Shizuoka, Japan', 나고야: 'Nagoya, Japan', 삿포로: 'Sapporo, Japan',
       오키나와: { query: 'Naha, Japan', referencePoint: '나하' }, 히로시마: 'Hiroshima, Japan', 나가사키: 'Nagasaki, Japan',
       요나고: 'Yonago, Japan', 다카마쓰: 'Takamatsu, Japan', 대마도: { query: 'Izuhara, Japan', referencePoint: '이즈하라' },
@@ -54,6 +54,7 @@ export const cityRegions: BrowseRegion[] = [
         대련: 'Dalian, China', 연태: 'Yantai, China',
       }),
       country('홍콩', ['홍콩']),
+      country('마카오', ['마카오'], { 마카오: { query: 'Macau', countryCode: 'MO' } }),
     ],
   },
   {
@@ -91,21 +92,21 @@ export const cityRegions: BrowseRegion[] = [
   {
     name: '유럽',
     countries: [
-      country('크로아티아', ['두브로브니크', '자그레브'], { 두브로브니크: 'Dubrovnik, Croatia', 자그레브: 'Zagreb, Croatia' }),
-      country('포르투갈', ['리스본'], { 리스본: 'Lisbon, Portugal' }),
-      country('이탈리아', ['밀라노', '로마', '피렌체'], { 밀라노: 'Milan, Italy', 피렌체: 'Florence, Italy' }),
-      country('벨기에', ['브뤼셀'], { 브뤼셀: 'Brussels, Belgium' }),
-      country('핀란드', ['헬싱키'], { 헬싱키: 'Helsinki, Finland' }),
-      country('그리스', ['아테네'], { 아테네: 'Athens, Greece' }),
       country('프랑스', ['니스', '파리'], { 니스: 'Nice, France' }),
-      country('스페인', ['마요르카', '바르셀로나', '마드리드'], { 마요르카: { query: 'Palma, Spain', referencePoint: '팔마' }, 마드리드: 'Madrid, Spain' }),
-      country('체코', ['프라하']),
-      country('영국', ['런던']),
-      country('오스트리아', ['빈']),
+      country('이탈리아', ['밀라노', '로마', '피렌체'], { 밀라노: 'Milan, Italy', 피렌체: 'Florence, Italy' }),
       country('스위스', ['인터라켄', '취리히'], { 취리히: 'Zurich, Switzerland' }),
-      country('헝가리', ['부다페스트']),
       country('독일', ['프랑크푸르트', '뮌헨', '베를린'], { 프랑크푸르트: 'Frankfurt am Main, Germany', 뮌헨: 'Munich, Germany', 베를린: 'Berlin, Germany' }),
+      country('오스트리아', ['빈']),
+      country('체코', ['프라하']),
+      country('헝가리', ['부다페스트']),
+      country('스페인', ['마요르카', '바르셀로나', '마드리드'], { 마요르카: { query: 'Palma, Spain', referencePoint: '팔마' }, 마드리드: 'Madrid, Spain' }),
+      country('포르투갈', ['리스본'], { 리스본: 'Lisbon, Portugal' }),
+      country('영국', ['런던']),
+      country('벨기에', ['브뤼셀'], { 브뤼셀: 'Brussels, Belgium' }),
       country('네덜란드', ['암스테르담']),
+      country('크로아티아', ['두브로브니크', '자그레브'], { 두브로브니크: 'Dubrovnik, Croatia', 자그레브: 'Zagreb, Croatia' }),
+      country('그리스', ['아테네'], { 아테네: 'Athens, Greece' }),
+      country('핀란드', ['헬싱키'], { 헬싱키: 'Helsinki, Finland' }),
     ],
   },
   {

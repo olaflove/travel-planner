@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
+import ChipButton from './ChipButton'
 
 const popularCities = ['삿포로', '다낭', '리스본', '치앙마이']
 const months = Array.from({ length: 12 }, (_, index) => index + 1)
@@ -56,7 +57,7 @@ export default function DestinationSearch() {
       <div className="popular-cities">
         <span>인기 여행지</span>
         {popularCities.map((popularCity) => (
-          <button key={popularCity} type="button" onClick={() => setCity(popularCity)}>{popularCity}</button>
+          <ChipButton key={popularCity} onClick={() => setCity(popularCity)}>{popularCity}</ChipButton>
         ))}
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router'
 import Header from '../components/Header'
 import AnnualClimateChart from '../components/AnnualClimateChart'
 import CityBrowser from '../components/CityBrowser'
+import ChipButton from '../components/ChipButton'
 import { findBrowseCity, type BrowseCity } from '../data/cityBrowser'
 import { recommendationCities } from '../data/recommendationCities'
 import recommendationClimate from '../data/recommendationClimate.json'
@@ -46,6 +47,7 @@ export default function WeatherPage() {
   const [chosenCity, setChosenCity] = useState<City | null>(null)
   const [selectedBrowseCity, setSelectedBrowseCity] = useState<BrowseCity | null>(null)
   const [suggestionOpen, setSuggestionOpen] = useState(false)
+  const [cityBrowserOpen, setCityBrowserOpen] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
   const [remoteSuggestions, setRemoteSuggestions] = useState<{ query: string; cities: City[] }>({ query: '', cities: [] })
   const [suggestionLoading, setSuggestionLoading] = useState(false)
@@ -66,6 +68,8 @@ export default function WeatherPage() {
   const suggestions: City[] = [...localSuggestions, ...extraSuggestions].slice(0, 8)
   const initialLookupStarted = useRef(false)
   const weatherRequestId = useRef(0)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const cityBrowserTriggerRef = useRef<HTMLButtonElement>(null)
   const monthPickerRef = useRef<HTMLDivElement>(null)
   const monthTriggerRef = useRef<HTMLButtonElement>(null)
 
@@ -77,6 +81,13 @@ export default function WeatherPage() {
     document.addEventListener('pointerdown', closeOnOutsideClick)
     return () => document.removeEventListener('pointerdown', closeOnOutsideClick)
   }, [monthOpen])
+
+  useEffect(() => {
+    if (weatherLoading || !selectedCity || !climate) return
+    if (window.matchMedia('(max-width: 1450px)').matches) {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [weatherLoading, selectedCity, climate])
 
   function chooseMonth(value: number) {
     setMonth(value)
@@ -105,6 +116,7 @@ export default function WeatherPage() {
     setChosenCity(city)
     setSelectedBrowseCity(null)
     setSuggestionOpen(false)
+    setCityBrowserOpen(false)
     setActiveSuggestion(-1)
     setCityOptions([])
   }
@@ -184,6 +196,7 @@ export default function WeatherPage() {
     const query = cityInput.trim()
     if (!query) return
     setSuggestionOpen(false)
+    setCityBrowserOpen(false)
     setSearchParams({ city: query, month: String(month) })
     if (chosenCity?.name === query) {
       void showClimate(chosenCity, month)
@@ -217,35 +230,32 @@ export default function WeatherPage() {
     <div className="weather-page" id="top">
       <Header />
       <main>
-        <section className="weather-intro">
-          <div className="weather-intro-inner">
-            <span className="section-kicker">WEATHER GUIDE</span>
-            <h1>어느 달에 떠나도,<br /><em>날씨는 알고 가요.</em></h1>
-            <p>도시의 월별 기후를 살펴보거나, 여행하기 편안한 달의 도시를 찾아보세요.</p>
-          </div>
-          <div className="weather-intro-symbol" aria-hidden="true">☀</div>
-        </section>
-
-        <section className="weather-content" aria-labelledby="city-weather-title">
+        <section className="weather-content city-weather-section" aria-labelledby="city-weather-title">
           <div className="weather-section-heading">
             <div className="weather-step">01</div>
-            <div><h2 id="city-weather-title">도시의 날씨 살펴보기</h2><p>도시와 월을 고르면 2021–2025년 평균 날씨와 연중 변화를 보여드려요.</p></div>
+            <div><h1 id="city-weather-title">도시의 날씨 살펴보기</h1><p>도시와 월을 고르면 2021–2025년 평균 날씨와 연중 변화를 보여드려요.</p></div>
           </div>
+          <div className="weather-workspace">
+          <div className="weather-search-panel">
           <form className="weather-query" onSubmit={handleWeatherSubmit}>
-            <div className="city-search-field" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setSuggestionOpen(false) }}>
+            <div className="city-search-field" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) { setSuggestionOpen(false); setCityBrowserOpen(false) } }} onKeyDown={(event) => { if (event.key === 'Escape' && cityBrowserOpen) { setCityBrowserOpen(false); cityBrowserTriggerRef.current?.focus() } }}>
               <label htmlFor="weather-city">도시 이름</label>
-              <div className="city-input-wrap">
-                <input id="weather-city" value={cityInput} onChange={(event) => { setCityInput(event.target.value); setChosenCity(null); setSelectedBrowseCity(null); setSuggestionOpen(true); setActiveSuggestion(-1) }} onFocus={() => { if (cityInput.trim()) setSuggestionOpen(true) }} onKeyDown={(event) => {
+              <div className="city-combobox">
+              <div className={`city-input-wrap${cityBrowserOpen ? ' is-browse-open' : ''}`}>
+                <input id="weather-city" value={cityInput} onChange={(event) => { setCityInput(event.target.value); setChosenCity(null); setSelectedBrowseCity(null); setCityBrowserOpen(false); setSuggestionOpen(true); setActiveSuggestion(-1) }} onFocus={() => { if (cityInput.trim() && !cityBrowserOpen) setSuggestionOpen(true) }} onKeyDown={(event) => {
                   if (event.key === 'Escape') { setSuggestionOpen(false); setActiveSuggestion(-1) }
                   if (!suggestionOpen || !suggestions.length) return
                   if (event.key === 'ArrowDown') { event.preventDefault(); setActiveSuggestion((current) => (current + 1) % suggestions.length) }
                   if (event.key === 'ArrowUp') { event.preventDefault(); setActiveSuggestion((current) => current <= 0 ? suggestions.length - 1 : current - 1) }
                   if (event.key === 'Enter' && activeSuggestion >= 0) { event.preventDefault(); chooseSuggestion(suggestions[activeSuggestion]) }
-                }} placeholder="예: 파리, 리스본" role="combobox" aria-autocomplete="list" aria-expanded={suggestionOpen && !!cityQuery} aria-controls="weather-city-suggestions" aria-activedescendant={activeSuggestion >= 0 && suggestionOpen ? `weather-city-option-${activeSuggestion}` : undefined} autoComplete="off" required />
+                }} placeholder="도시를 직접 입력하거나 인기 목록을 펼쳐보세요." role="combobox" aria-autocomplete="list" aria-expanded={suggestionOpen && !!cityQuery} aria-controls="weather-city-suggestions" aria-activedescendant={activeSuggestion >= 0 && suggestionOpen ? `weather-city-option-${activeSuggestion}` : undefined} autoComplete="off" required />
+                <button className="city-browse-trigger" ref={cityBrowserTriggerRef} type="button" aria-label="지역·국가별 도시 목록" aria-expanded={cityBrowserOpen} aria-controls="city-browser-panel" onClick={() => { setSuggestionOpen(false); setCityBrowserOpen((current) => !current) }}><span className="travel-month-chevron" aria-hidden="true" /></button>
                 {suggestionOpen && cityQuery && <div className="city-suggestions" id="weather-city-suggestions" role="listbox" aria-label="도시 추천">
                   {suggestions.map((city, index) => <button id={`weather-city-option-${index}`} key={`${city.name}-${city.country}-${city.latitude}`} type="button" role="option" aria-selected={index === activeSuggestion} className={index === activeSuggestion ? 'active' : ''} onClick={() => chooseSuggestion(city)}><strong>{city.name}</strong><span>{city.country}</span></button>)}
                   {!suggestions.length && <p>{suggestionLoading ? '도시를 찾는 중이에요…' : cityQuery.length < 3 ? '추천 도시가 없어요. 다른 도시는 3글자 이상 입력해 보세요.' : '추천 도시가 없어요. 도시 이름을 더 입력하거나 날씨 보기를 눌러 검색해 보세요.'}</p>}
                 </div>}
+              </div>
+              <CityBrowser open={cityBrowserOpen} onSelectCity={chooseBrowseCity} selectedCityName={selectedBrowseCity?.name} />
               </div>
             </div>
             <div className="travel-month-field" ref={monthPickerRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setMonthOpen(false) }}>
@@ -260,22 +270,26 @@ export default function WeatherPage() {
             </div>
             <button type="submit" disabled={weatherLoading}>{weatherLoading ? '불러오는 중…' : '날씨 보기 →'}</button>
           </form>
-          <CityBrowser onSelectCity={chooseBrowseCity} selectedCityName={selectedBrowseCity?.name} />
-          {cityOptions.length > 1 && <div className="city-options"><span>검색된 도시</span>{cityOptions.map((city, index) => <button key={`${city.id || city.name}-${index}`} type="button" className={selectedCity === city ? 'selected' : ''} onClick={() => { chooseSuggestion(city); void showClimate(city, month) }}>{city.name}, {city.admin1 ? `${city.admin1}, ` : ''}{city.country}</button>)}</div>}
+          {cityOptions.length > 1 && <div className="city-options"><span>검색된 도시</span>{cityOptions.map((city, index) => <ChipButton key={`${city.id || city.name}-${index}`} selected={selectedCity === city} onClick={() => { chooseSuggestion(city); void showClimate(city, month) }}>{city.name}, {city.admin1 ? `${city.admin1}, ` : ''}{city.country}</ChipButton>)}</div>}
+          </div>
+          <div className="weather-result-panel">
           {weatherError && <p className="weather-message error" role="alert">{weatherError}</p>}
           {weatherLoading && <p className="weather-message" role="status">도시의 기후 자료를 읽고 있어요…</p>}
-          {selectedCity && climate && !weatherLoading && <div className="climate-result" aria-live="polite">
-            <div className="climate-result-header"><div><span className="section-kicker">MONTHLY CLIMATE</span><h3>{selectedCity.name}, {selectedCity.country} <small>{displayMonth}월</small></h3></div><span className="climate-sun" aria-hidden="true">☀</span></div>
+          {selectedCity && climate && !weatherLoading && <div className="climate-result" ref={resultRef} aria-live="polite">
+            <div className="climate-result-header"><h3>{selectedCity.name}{selectedCity.name !== selectedCity.country && `, ${selectedCity.country}`}<small>{displayMonth}월</small></h3></div>
             <div className="climate-stats"><div><span>평균 낮 최고</span><strong>{rounded(climate.averageHigh)}°</strong><small>℃</small></div><div><span>평균 밤 최저</span><strong>{rounded(climate.averageLow)}°</strong><small>℃</small></div><div><span>월 강수량</span><strong>{rounded(climate.averageRainfall)}</strong><small>mm</small></div><div><span>강수일 비율</span><strong>{rounded(climate.rainyDayPercent)}</strong><small>%</small></div></div>
-            <div className="outfit-tip"><span aria-hidden="true">✦</span><p><strong>옷차림 참고</strong> {getOutfitTip(climate)}</p></div>
+            <p className="climate-outfit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4c-1.6 0-3-.7-4-2L3 5 1 9l4 2 2-2v11h10V9l2 2 4-2-2-4-5-3c-1 1.3-2.4 2-4 2Z" /></svg><span><strong>옷차림 참고</strong> {getOutfitTip(climate)}</span></p>
             <p className="data-note">2021–2025년 같은 달의 과거 자료 평균입니다. 선택한 여행 날짜의 예보가 아니며, 강수일은 비·눈을 합친 하루 강수량 1mm 이상을 뜻해요.</p>
           </div>}
+          {!selectedCity && !weatherLoading && !weatherError && <div className="climate-empty-state"><p>도시와 여행할 달을 선택하면<br />월별 기후가 여기에 표시돼요.</p></div>}
+          </div>
+          </div>
           {selectedCity && annualClimate && !weatherLoading && <AnnualClimateChart cityName={selectedCity.name} months={annualClimate} selectedMonth={displayMonth} />}
         </section>
 
         <section className="weather-content recommendation-section" aria-labelledby="recommendation-title">
           <div className="weather-section-heading"><div className="weather-step">02</div><div><h2 id="recommendation-title">이 달엔 어디가 좋을까요?</h2><p>떠날 달만 고르면 미리 선정한 여행지가 바로 보여요.</p></div></div>
-          <div className="month-picker" aria-label="여행할 달 선택">{months.map((item) => <button key={item} type="button" className={recommendationMonth === item ? 'active' : ''} onClick={() => setRecommendationMonth(item)}>{item}월</button>)}</div>
+          <div className="month-picker" aria-label="여행할 달 선택">{months.map((item) => <ChipButton key={item} selected={recommendationMonth === item} onClick={() => setRecommendationMonth(item)}>{item}월</ChipButton>)}</div>
           <div className="recommendation-rule"><strong>선정 기준</strong><span>2021–2025년의 월별 기온·강수량을 비교하고 지역별 태풍 집중 시기를 참고했어요.</span></div>
           {recommendationMonth > 0 && <>
             {recommendations.length ? <div className="recommendation-grid">{recommendations.map((recommendation) => <article className="recommendation-card" key={recommendation.city.name}><span>{recommendation.city.country}</span><h3>{recommendation.city.name}</h3><p>평균 낮 {rounded(recommendation.climate.high)}℃ · 월 강수량 {rounded(recommendation.climate.rainfall)}mm</p><button type="button" onClick={() => useRecommendedCity(recommendation)}>날씨 자세히 보기 ↗</button></article>)}</div> : <p className="weather-message">선정한 여행지가 없어요. 다른 달을 선택해 보세요.</p>}

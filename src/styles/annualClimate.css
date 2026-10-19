@@ -32,3 +32,7 @@
 .annual-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:800px){.annual-climate-heading{display:block}.annual-climate-legend{margin-top:16px}}
 @media(max-width:520px){.annual-climate{padding:23px 19px}.annual-climate-heading h3{font-size:22px}.annual-chart-detail{gap:8px 15px}}
+.annual-climate{padding:20px 26px 22px}
+.annual-climate-heading{margin-bottom:16px}
+.annual-climate-heading h3{margin-top:0}
+@media(max-width:520px){.annual-climate{padding:18px 16px}}

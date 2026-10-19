@@ -37,7 +37,7 @@ export default function AnnualClimateChart({ cityName, months, selectedMonth }: 
   return (
     <section className="annual-climate" aria-labelledby="annual-climate-title">
       <div className="annual-climate-heading">
-        <div><span className="section-kicker">YEARLY OVERVIEW</span><h3 id="annual-climate-title">{cityName}의 1년 날씨</h3><p>2021–2025년 월별 평균 · 선택한 달과 관계없이 12개월을 보여드려요.</p></div>
+        <div><h3 id="annual-climate-title">{cityName}의 1년 날씨</h3><p>2021–2025년 월별 평균 · 선택한 달과 관계없이 12개월을 보여드려요.</p></div>
         <div className="annual-climate-legend" aria-label="그래프 범례"><span className="high">최고기온</span><span className="low">최저기온</span><span className="rain">강수량</span></div>
       </div>
       <div className="annual-chart-scroll">

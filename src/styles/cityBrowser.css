@@ -1,17 +1,10 @@
-.city-browser{margin-top:13px}
+.city-browser{margin-top:0}
+.city-browser .popular-cities{margin:12px 0 0;padding:0}
 .popular-cities{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:0 4px}
 .popular-cities span{margin-right:5px;color:#7b8d7f;font-size:12px;font-weight:700}
-.popular-cities button,.city-region-list button,.city-country-list button,.city-browser-grid button{display:inline-flex;align-items:center;padding:7px 12px;border:1px solid #d9e7dc;border-radius:100px;background:#eff6ee;color:#33745a;font-size:12px;font-weight:400;line-height:1.4;cursor:pointer}
-.popular-cities button:hover,.popular-cities button:focus-visible,.city-region-list button:hover:not(.active),.city-country-list button:hover:not(.active),.city-browser-grid button:hover,.city-region-list button:focus-visible,.city-country-list button:focus-visible,.city-browser-grid button:focus-visible{border-color:#80b696;background:#e3f0e5;outline:none}
-.city-browser-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:17px;padding:15px 18px;border:1px solid #e1e9df;border-radius:12px;background:#f1f5ee;color:#647b69;text-align:left;font-size:13px;cursor:pointer}
-.city-browser-toggle strong{color:#2d7458}
-.city-browser-toggle>span:last-child{flex:none;color:#2d7458;font-weight:700}
-.city-browser-toggle:hover,.city-browser-toggle:focus-visible{border-color:#9cc5a7;outline:none}
-.city-browser-panel{margin-top:10px;padding:23px;border:1px solid #e1e9df;border-radius:18px;background:#fff;box-shadow:0 12px 32px #263b2e0a}
+.city-browser-panel{position:absolute;z-index:40;top:47px;left:0;width:100%;height:min(320px,55vh);overflow-y:auto;scrollbar-gutter:stable;padding:18px 20px 20px;border:1px solid #7faf94;border-top:0;border-radius:0 0 11px 11px;background:#fff;box-shadow:0 16px 28px #263b2e1c}
 .city-browser-step{display:flex;align-items:baseline;gap:12px;margin:0 0 12px;color:#829083;font-size:12px}
 .city-browser-step:not(:first-child){margin-top:24px}
 .city-browser-step strong{color:#2d7458;font-size:13px}
 .city-region-list,.city-country-list,.city-browser-grid{display:flex;flex-wrap:wrap;gap:8px}
-.city-region-list button.active,.city-country-list button.active{border-color:#2d7b61;background:#2d7b61;color:#fff}
-.city-browser-grid button.active,.popular-cities button[aria-pressed="true"]{border-color:#2d7b61;background:#2d7b61;color:#fff}
-@media(max-width:620px){.city-browser-panel{padding:18px}.city-browser-step{display:block}.city-browser-step span{display:block;margin-top:4px}}
+@media(max-width:620px){.city-browser-panel{padding:18px}.city-browser-step{flex-wrap:wrap}}
